@@ -1,6 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle loading screen
-    handleLoadingScreen();
+    // Handle loading screen with error handling
+    try {
+        handleLoadingScreen();
+    } catch (error) {
+        console.error("Loading screen error:", error);
+        // Hide loading screen in case of error
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => {
+                if (loadingScreen.parentNode) loadingScreen.parentNode.removeChild(loadingScreen);
+            }, 600);
+        }
+    }
     
     // Initialize slideshow
     initSlideshow();
@@ -14,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize smooth scrolling for navigation links
     initSmoothScroll();
     
-    // Auto-hide navigation on scroll
+    // Auto-hide navigation on scroll & handle header background
     initScrollNavigation();
     
     // Hide unnecessary buttons
@@ -40,27 +52,135 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize active menu tracking
     initActiveMenuTracking();
+
+    // Initialize newsletter form
+    initNewsletterForm();
+
+    // Initialize network status listener
+    initNetworkStatusListener();
 });
 
 // Loading Screen Handler
 function handleLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
+    const textContainer = loadingScreen?.querySelector('.loader-text-container');
+    const progressBar = loadingScreen?.querySelector('.progress-bar');
+
+    if (!loadingScreen || !textContainer || !progressBar) {
+        console.error("Loading screen elements not found.");
+        if(loadingScreen) loadingScreen.style.display = 'none';
+        return;
+    }
+
+    const messages = [
+        "Đang tải vẻ đẹp Cố đô...",
+        "Ước tính tốc độ mạng...",
+        "Khám phá di sản văn hóa...",
+        "Chuẩn bị hành trình ẩm thực...",
+        "Sắp đặt dòng sông Hương thơ mộng...",
+        "Hoàn tất..."
+    ];
+    let messageIndex = 0;
+    let textInterval;
+
+    // --- Progress and Network Speed Logic ---
+    let progress = 0;
+    let progressInterval;
+    const assets = [
+        'assets/images/slides/dai-noi.jpg',
+        'assets/images/slides/chua-thien-mu.jpg',
+        'assets/images/slides/lang-tu-duc.jpg',
+        'assets/images/cuisine-bun-bo.jpg',
+        'assets/images/culture/nha-nhac-detail.jpg'
+    ];
+    let assetsLoaded = 0;
+    const totalAssets = assets.length;
+
+    const updateText = () => {
+        const currentMessage = messages[messageIndex];
+        
+        const currentText = textContainer.firstChild;
+        if (currentText) currentText.classList.remove('active');
+
+        setTimeout(() => {
+            textContainer.innerHTML = `<div class="loader-text">${currentMessage}</div>`;
+            textContainer.firstChild.classList.add('active');
+        }, 500);
+        
+        messageIndex = (messageIndex + 1) % messages.length;
+    };
     
-    // More reliable loading approach - wait for content and resources
-    window.addEventListener('load', function() {
-        if (loadingScreen) {
-            setTimeout(function() {
-                loadingScreen.classList.add('hidden');
-                
-                // Remove the loading screen from DOM after transition completes
-                setTimeout(function() {
-                    if (loadingScreen.parentNode) {
-                        loadingScreen.parentNode.removeChild(loadingScreen);
-                    }
-                }, 600);
-            }, 500); // Reduced waiting time for better UX
-        }
+    const startProgressSimulation = () => {
+        updateText(); // "Đang tải vẻ đẹp Cố đô..."
+        
+        progressInterval = setInterval(() => {
+            if(progress < (assetsLoaded / totalAssets) * 100) {
+                progress += 1.5; // Move progress smoothly towards the loaded percentage
+            }
+            if(progress > 30 && messageIndex === 1) updateText(); // "Ước tính tốc độ mạng..."
+            if(progress > 60 && messageIndex === 2) updateText(); // "Khám phá di sản..."
+            if(progress > 85 && messageIndex === 3) updateText(); // "Chuẩn bị hành trình..."
+
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+        }, 100);
+    };
+
+    const loadAsset = (url) => {
+        const randomParam = `?v=${new Date().getTime()}`;
+        fetch(url + randomParam)
+            .then(() => {
+                assetsLoaded++;
+            })
+            .catch(() => {
+                assetsLoaded++; // Still count as loaded to not stall the process
+            });
+    };
+
+    const hideLoadingScreen = () => {
+        if (loadingScreen.classList.contains('hidden')) return;
+
+        clearInterval(progressInterval);
+        clearInterval(textInterval);
+        
+        messageIndex = messages.length -1; // Set to "Hoàn tất..."
+        updateText();
+        
+        progressBar.style.width = '100%';
+
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+            loadingScreen.addEventListener('transitionend', () => {
+                loadingScreen.remove();
+            }, { once: true });
+        }, 1000); // Wait a bit on 100% before fading
+    };
+    
+    // --- Start ---
+    textInterval = setInterval(updateText, 2500);
+    startProgressSimulation();
+    assets.forEach(loadAsset);
+
+    window.addEventListener('load', () => {
+        // When page is fully loaded, accelerate to 100% and hide
+        clearInterval(progressInterval);
+        let finalProgress = progress;
+        
+        const finalInterval = setInterval(() => {
+            finalProgress += 4;
+            progressBar.style.width = `${Math.min(finalProgress, 100)}%`;
+            if (finalProgress >= 100) {
+                clearInterval(finalInterval);
+                hideLoadingScreen();
+            }
+        }, 50);
     });
+
+    // Fallback
+    setTimeout(() => {
+        if (!loadingScreen.classList.contains('hidden')) {
+             hideLoadingScreen();
+        }
+    }, 12000);
 }
 
 // Slideshow functionality with enhanced transitions
@@ -536,27 +656,35 @@ function initSmoothScroll() {
     });
 }
 
-// Auto-hide navigation on scroll down, show on scroll up with enhanced transitions
+// Auto-hide navigation on scroll & handle header background
 function initScrollNavigation() {
     const header = document.querySelector('header');
+    if (!header) return;
+
     let lastScrollTop = 0;
-    
+
     window.addEventListener('scroll', function() {
-        let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-        
-        if (currentScroll > lastScrollTop && currentScroll > 150) {
-            // Scrolling down & past threshold
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Add/remove scrolled class for background effect
+        if (scrollTop > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+
+        // Hide/show header on scroll direction change
+        if (scrollTop > lastScrollTop && scrollTop > header.offsetHeight) {
             header.classList.add('header-hidden');
         } else {
-            // Scrolling up or at top
             header.classList.remove('header-hidden');
         }
         
-        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-    });
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
 }
 
-// Hide unnecessary buttons and add enhanced UI elements
+// Hide unnecessary buttons
 function hideUnnecessaryButtons() {
     // Hide dot navigation on small screens
     if (window.innerWidth < 768) {
@@ -620,105 +748,69 @@ function hideUnnecessaryButtons() {
     });
 }
 
-// Optimize parallax scrolling effects using requestAnimationFrame
+// Optimize parallax scrolling effects using requestAnimationFrame and IntersectionObserver
 function initParallaxEffects() {
-    // Use IntersectionObserver for better performance
-    const parallaxSections = document.querySelectorAll('[data-speed]');
+    const parallaxElements = document.querySelectorAll('[data-speed]');
+    if (!parallaxElements.length) return;
+
     let ticking = false;
-    
+
     const parallaxObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            // Store whether section is visible for use in scroll handler
-            entry.target.isVisible = entry.isIntersecting;
+            entry.target.isIntersecting = entry.isIntersecting;
         });
-    }, { threshold: 0.1 });
-    
-    // Observe all sections with parallax effect
-    parallaxSections.forEach(section => {
-        parallaxObserver.observe(section);
-        section.isVisible = false; // Initialize visibility
+    }, { threshold: 0 });
+
+    parallaxElements.forEach(el => {
+        parallaxObserver.observe(el);
     });
-    
-    // More efficient scroll handler using requestAnimationFrame
-    window.addEventListener('scroll', function() {
+
+    function handleScroll() {
         if (!ticking) {
-            window.requestAnimationFrame(function() {
-                const scrollPosition = window.pageYOffset;
-                
-                // Only update visible sections
-                parallaxSections.forEach(section => {
-                    if (section.isVisible) {
-                        const sectionTop = section.offsetTop;
-                        const speed = section.getAttribute('data-speed') || 0.1;
-                        const yPos = (scrollPosition - sectionTop) * speed;
-                        
-                        if (section.querySelector('.section-title')) {
-                            section.querySelector('.section-title').style.transform = `translateY(${yPos}px)`;
-                        }
+            window.requestAnimationFrame(() => {
+                const scrollY = window.pageYOffset;
+                parallaxElements.forEach(el => {
+                    if (el.isIntersecting) {
+                        const speed = parseFloat(el.getAttribute('data-speed')) || 0.1;
+                        const yPos = (scrollY - el.offsetTop) * speed;
+                        el.style.transform = `translate3d(0, ${yPos}px, 0)`;
                     }
                 });
-                
-                // Handle hero parallax - only if visible and not on mobile
-                const hero = document.querySelector('#hero');
-                if (hero && scrollPosition < window.innerHeight && window.innerWidth > 768) {
-                    const heroImage = hero.querySelector('.slide.active img');
-                    if (heroImage) {
-                        heroImage.style.transform = `scale(1.05) translateY(${scrollPosition * 0.15}px)`;
-                    }
-                }
-                
                 ticking = false;
             });
-            
             ticking = true;
         }
-    });
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 }
 
 // Reveal animations for sections as they scroll into view
 function initRevealAnimations() {
-    // Create intersection observer with proper options
-    const options = {
-        root: null,
-        threshold: 0.15,
-        rootMargin: '0px'
-    };
-    
-    // Target sections
-    const sections = document.querySelectorAll('section');
-    
-    // Handle section reveal with intersection observer
-    const sectionObserver = new IntersectionObserver((entries) => {
+    const sectionsToReveal = document.querySelectorAll('section');
+    if (!sectionsToReveal.length) return;
+
+    const revealObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('reveal');
-                sectionObserver.unobserve(entry.target);
                 
-                // Reveal child elements in sequence
-                const elements = entry.target.querySelectorAll('.culture-feature, .destination-card, .cuisine-slide, .tip-card');
-                elements.forEach((el, i) => {
-                    setTimeout(() => {
-                        el.style.opacity = '1';
-                        el.style.transform = 'translateY(0)';
-                    }, 100 + i * 100);
+                const childElements = entry.target.querySelectorAll('.destination-card, .culture-feature, .cuisine-slide, .tip-card, .stat-item, .overview-text');
+                childElements.forEach((child, index) => {
+                    child.style.transitionDelay = `${index * 100}ms`;
                 });
+
+                observer.unobserve(entry.target);
             }
         });
-    }, options);
-    
-    // Set initial states and observe
-    sections.forEach(section => {
+    }, {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
+    });
+
+    sectionsToReveal.forEach(section => {
         section.classList.add('section-hidden');
-        
-        // Set initial state of child elements
-        const elements = section.querySelectorAll('.culture-feature, .destination-card, .cuisine-slide, .tip-card');
-        elements.forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(40px)';
-            el.style.transition = 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)';
-        });
-        
-        sectionObserver.observe(section);
+        revealObserver.observe(section);
     });
 }
 
@@ -902,16 +994,19 @@ function initCustomCursor() {
             cursorOuter.classList.remove('hover');
         });
     });
-}
 
-// Add a function to create water ripple effect on hover for certain elements
-document.addEventListener('DOMContentLoaded', function() {
-    const rippleElements = document.querySelectorAll('.btn-explore, .btn-details');
-    
-    rippleElements.forEach(el => {
-        el.addEventListener('mouseenter', createRipple);
+    // Add pressed state on mousedown
+    document.addEventListener('mousedown', () => {
+        cursorInner.classList.add('pressed');
     });
-    
+
+    document.addEventListener('mouseup', () => {
+        cursorInner.classList.remove('pressed');
+    });
+
+    // Ripple effect for buttons on click
+    document.addEventListener('click', createRipple);
+
     function createRipple(e) {
         const ripple = document.createElement('span');
         ripple.classList.add('ripple');
@@ -930,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ripple.remove();
         }, 1000);
     }
-});
+}
 
 // Initialize active menu tracking based on scroll position
 function initActiveMenuTracking() {
@@ -975,4 +1070,80 @@ function initActiveMenuTracking() {
             }
         }
     });
+}
+
+// Handle newsletter form submission
+function initNewsletterForm() {
+    const subscribeForm = document.querySelector('.subscribe-form');
+    if (!subscribeForm) return;
+
+    subscribeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const input = this.querySelector('input[type="email"]');
+        const button = this.querySelector('button');
+
+        // Basic validation
+        if (input.value.trim() === '' || !input.value.includes('@')) {
+            alert('Vui lòng nhập một địa chỉ email hợp lệ.');
+            return;
+        }
+
+        // Simulate submission
+        button.textContent = 'Đang gửi...';
+        button.disabled = true;
+        input.disabled = true;
+
+        setTimeout(() => {
+            button.textContent = 'Cảm ơn bạn!';
+            button.style.backgroundColor = '#2ecc71';
+
+            // Reset form after a few seconds
+            setTimeout(() => {
+                button.textContent = 'Đăng ký';
+                button.disabled = false;
+                input.disabled = false;
+                input.value = '';
+                button.style.backgroundColor = '';
+            }, 3000);
+        }, 1500);
+    });
+}
+
+// Network Status Listener
+function initNetworkStatusListener() {
+    const popup = document.getElementById('network-status-popup');
+    if (!popup) return;
+    
+    const statusText = popup.querySelector('.status-text');
+    const icon = popup.querySelector('i');
+
+    function updateNetworkStatus() {
+        if (navigator.onLine) {
+            popup.classList.remove('offline');
+            popup.classList.add('online');
+            icon.className = 'fas fa-wifi';
+            statusText.textContent = 'Kết nối đã được khôi phục.';
+            
+            // Show the popup and then hide it after a delay
+            popup.classList.add('show');
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 5000);
+        } else {
+            popup.classList.remove('online');
+            popup.classList.add('offline');
+            icon.className = 'fas fa-exclamation-triangle';
+            statusText.textContent = 'Mất kết nối mạng. Vui lòng kiểm tra lại.';
+            popup.classList.add('show');
+        }
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    // Initial check in case the page loads offline
+    if (!navigator.onLine) {
+        updateNetworkStatus();
+    }
 }

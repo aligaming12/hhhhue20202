@@ -1,0 +1,158 @@
+/* --- Modern Travel-Themed Loading Screen --- */
+
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+    overflow: hidden;
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('assets/images/slides/dai-noi.jpg');
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.1);
+    filter: blur(8px) brightness(0.7);
+    transition: opacity 1s ease-in-out, transform 8s ease-out;
+}
+
+#loading-screen.hidden .loader-bg {
+    opacity: 0;
+}
+
+.loader-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#loading-screen.hidden .loader-content {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.compass {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto 30px;
+    animation: spin 4s linear infinite;
+    backdrop-filter: blur(2px);
+}
+
+.compass::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 90%;
+    background-image: 
+        repeating-conic-gradient(
+            rgba(255, 255, 255, 0.05) 0 15deg, 
+            transparent 15deg 45deg
+        );
+    border-radius: 50%;
+}
+
+.compass-needle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 3px;
+    height: 38px;
+    background: #e74c3c;
+    border-radius: 3px;
+    transform-origin: bottom;
+    transform: translateX(-50%) rotate(180deg);
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+}
+
+.compass-needle::before {
+    content: '';
+    position: absolute;
+    top: -38px;
+    left: -7.5px;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 14px solid #e74c3c;
+}
+
+.compass-needle::after {
+    display: none;
+}
+
+.loader-text-container {
+    height: 30px; 
+    margin-top: 10px;
+}
+
+.loader-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: #FFF;
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    position: absolute;
+    width: 100%;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.loader-text.active {
+    opacity: 1;
+}
+
+.progress-bar-container {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 400px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    backdrop-filter: blur(2px);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 0 10px #fff, 0 0 20px rgba(255, 255, 255, 0.8);
+    transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+} 

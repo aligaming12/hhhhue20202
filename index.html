@@ -7,6 +7,7 @@
     <meta name="keywords" content="Du lịch Huế, Cố đô Huế, Di sản Huế, Kinh thành Huế, Ẩm thực Huế">
     <meta name="author" content="Huế Tourism">
     <title>Du Lịch Huế - Khám phá vẻ đẹp cố đô</title>
+    <link rel="stylesheet" href="loading.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Preload key assets for faster page load -->
@@ -17,15 +18,24 @@
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-container">
-            <div class="loader">
-                <div class="circle"></div>
-                <div class="circle"></div>
-                <div class="circle"></div>
+        <div class="loader-bg"></div>
+        <div class="loader-content">
+            <div class="compass">
+                <div class="compass-needle"></div>
             </div>
-            <h2>HUẾ TOURISM</h2>
-            <p>Đang tải trang...</p>
+            <div class="loader-text-container">
+                <!-- Text will be dynamically inserted here by script.js -->
+            </div>
         </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Network Status Popup -->
+    <div id="network-status-popup">
+        <i class="fas fa-wifi"></i>
+        <span class="status-text"></span>
     </div>
 
     <!-- Decorative Floating Elements -->
@@ -102,16 +112,25 @@
                 </div>
                 <div class="overview-stats">
                     <div class="stat-item">
-                        <div class="stat-number">1802-1945</div>
-                        <div class="stat-desc">Thời kỳ làm Kinh đô</div>
+                        <i class="fas fa-crown stat-icon"></i>
+                        <div>
+                            <div class="stat-number">1802-1945</div>
+                            <div class="stat-desc">Thời kỳ làm Kinh đô</div>
+                        </div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">1993</div>
-                        <div class="stat-desc">UNESCO công nhận Di sản</div>
+                        <i class="fas fa-award stat-icon"></i>
+                        <div>
+                            <div class="stat-number">1993</div>
+                            <div class="stat-desc">UNESCO công nhận Di sản</div>
+                        </div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">100+</div>
-                        <div class="stat-desc">Di tích lịch sử văn hóa</div>
+                        <i class="fas fa-monument stat-icon"></i>
+                        <div>
+                            <div class="stat-number">100+</div>
+                            <div class="stat-desc">Di tích lịch sử văn hóa</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -286,48 +305,6 @@
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section footer-logo">
-                    <h3>HUẾ TOURISM</h3>
-                    <p>Khám phá vẻ đẹp cố đô</p>
-                </div>
-                <div class="footer-section footer-links">
-                    <h4>Liên kết nhanh</h4>
-                    <ul>
-                        <li><a href="#hero" class="active">Trang chủ</a></li>
-                        <li><a href="#destinations">Điểm đến</a></li>
-                        <li><a href="#culture">Văn hóa</a></li>
-                        <li><a href="#cuisine">Ẩm thực</a></li>
-                        <li><a href="#travel-tips">Hướng dẫn</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section footer-subscribe">
-                    <h4>Nhận bản tin</h4>
-                    <p>Đăng ký để nhận những thông tin du lịch Huế mới nhất.</p>
-                    <form class="subscribe-form">
-                        <input type="email" placeholder="Email của bạn" aria-label="Email đăng ký" required>
-                        <button type="submit">Đăng ký</button>
-                    </form>
-                </div>
-                <div class="footer-section footer-social">
-                    <h4>Theo dõi chúng tôi</h4>
-                    <div class="social-icons">
-                        <a href="https://www.facebook.com/huetourism" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/huetourism" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.youtube.com/c/huetourism" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://www.tiktok.com/@huetourism" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-                        <a href="https://twitter.com/huetourism" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Huế Tourism. Bản quyền thuộc AliStudio.</p>
-            </div>
-        </div>
-    </footer>
-
     <!-- Modal Popups for Destination Details -->
     <div class="modal" id="destination-modal" aria-hidden="true" role="dialog">
         <div class="modal-content">
@@ -338,6 +315,53 @@
         </div>
     </div>
 
-    <script src="script.js" defer></script>
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section footer-about">
+                    <h3 class="footer-logo">HUẾ TOURISM</h3>
+                    <p>Khám phá vẻ đẹp cổ kính và những di sản văn hóa đặc sắc của Cố đô Huế.</p>
+                </div>
+                <div class="footer-section footer-links">
+                    <h4>Liên kết nhanh</h4>
+                    <ul>
+                        <li><a href="#hero">Trang Chủ</a></li>
+                        <li><a href="#destinations">Điểm Đến</a></li>
+                        <li><a href="#culture">Văn Hóa</a></li>
+                        <li><a href="#cuisine">Ẩm Thực</a></li>
+                        <li><a href="#travel-tips">Hướng Dẫn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section footer-subscribe">
+                    <h4>Nhận bản tin</h4>
+                    <p>Đăng ký để nhận những thông tin du lịch Huế mới nhất.</p>
+                    <form class="subscribe-form">
+                        <input type="email" placeholder="Email của bạn" required>
+                        <button type="submit">Đăng ký</button>
+                    </form>
+                </div>
+                <div class="footer-section footer-social">
+                    <h4>Theo dõi chúng tôi</h4>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/aliofficiali/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com/@AliStudio17" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.tiktok.com/@khaiduy202" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Huế Tourism. Bản quyền thuộc về AliStudio.</p>
+            </div>
+        </div>
+    </footer>
+
+    <button class="back-to-top" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
+    <div class="custom-cursor-outer"></div>
+    <div class="custom-cursor-inner"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>
